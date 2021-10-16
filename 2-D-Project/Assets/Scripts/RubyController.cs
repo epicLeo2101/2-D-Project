@@ -4,28 +4,64 @@ using UnityEngine;
 
 public class RubyController : MonoBehaviour
 {
+    public float speed = 3.0f;
+
+    public int maxHealth = 5;
+    public float timeInvincible = 2.0f;
+
+    int currentHealth;
+    public int health { get { return currentHealth; } }
+
+    bool isInvincible;
+    float invincibleTimer;
+
+
+    Rigidbody2D rigidbody2d;
+    float horizontal;
+    float vertical;
+
+    // Start is called before the first frame update
+    void Start()
+    {
+        rigidbody2d = GetComponent<Rigidbody2D>();
+        currentHealth = maxHealth;
+    }
 
     // Update is called once per frame
     void Update()
     {
-        //Gives data to the computer so it can move your character Left, right, up, and down.
-        float horizontal = Input.GetAxis("Horizontal");
-        float vertical = Input.GetAxis("Vertical");
+        horizontal = Input.GetAxis("Horizontal");
+        vertical = Input.GetAxis("Vertical");
 
-        //Shows the code logs in the play testing.
-        Debug.Log(horizontal);
-        Debug.Log(vertical);
+        if (isInvincible)
+        {
+            invincibleTimer -= Time.deltaTime;
+            if (invincibleTimer < 0)
+                isInvincible = false;
+        }
+    }
 
-        //This gives instructions on what the code should do
-        Vector2 position = transform.position;
+    void FixedUpdate()
+    {
+        Vector2 position = rigidbody2d.position;
+        position.x = position.x + speed * horizontal * Time.deltaTime;
+        position.y = position.y + speed * vertical * Time.deltaTime;
 
-        /*Tis part of the code moves the character to the Y or X axis of your choosing.
-         Keep in mind that the 10.0f are how fast they move. The higher the number the faster they go
-        Time.deltaTime is making movement for each frame take to what number you place.*/
-        position.x = position.x + 10.0f * horizontal * Time.deltaTime;
-        position.y = position.y + 10.0f * vertical * Time.deltaTime;
+        rigidbody2d.MovePosition(position);
+    }
 
-        //This is like Console.ReadLine(); it tells the computer to comence the action.
-        transform.position = position;
+    public void ChangeHealth(int amount)
+    {
+        if (amount < 0)
+        {
+            if (isInvincible)
+                return;
+
+            isInvincible = true;
+            invincibleTimer = timeInvincible;
+        }
+
+        currentHealth = Mathf.Clamp(currentHealth + amount, 0, maxHealth);
+        Debug.Log(currentHealth + "/" + maxHealth);
     }
 }
