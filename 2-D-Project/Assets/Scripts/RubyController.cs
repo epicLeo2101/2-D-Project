@@ -10,6 +10,11 @@ public class RubyController : MonoBehaviour
     public int maxHealth = 5;
     
     public GameObject projectilePrefab;
+
+    AudioSource audioSource;
+
+    public AudioClip cogThrow;
+    public AudioClip playerHit;
     
     public int health { get { return currentHealth; }}
     int currentHealth;
@@ -30,8 +35,14 @@ public class RubyController : MonoBehaviour
     {
         rigidbody2d = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
+        audioSource = GetComponent<AudioSource>();
         
         currentHealth = maxHealth;
+    }
+
+    public void PlaySound(AudioClip clip)
+    {
+        audioSource.PlayOneShot(clip);
     }
 
     // Update is called once per frame
@@ -62,6 +73,23 @@ public class RubyController : MonoBehaviour
         if(Input.GetKeyDown(KeyCode.C))
         {
             Launch();
+
+            PlaySound(cogThrow);
+        }
+        if (Input.GetKeyDown(KeyCode.X))
+        {
+            RaycastHit2D hit = Physics2D.Raycast(rigidbody2d.position + Vector2.up * 0.2f, lookDirection, 1.5f, LayerMask.GetMask("NPC"));
+            if (hit.collider != null)
+            {
+                if (hit.collider != null)
+                {
+                    NonPlayerCharacter character = hit.collider.GetComponent<NonPlayerCharacter>();
+                    if (character != null)
+                    {
+                        character.DisplayDialog();
+                    }
+                }
+            }
         }
     }
     
@@ -83,6 +111,7 @@ public class RubyController : MonoBehaviour
             
             isInvincible = true;
             invincibleTimer = timeInvincible;
+            PlaySound(playerHit);
         }
         
         currentHealth = Mathf.Clamp(currentHealth + amount, 0, maxHealth);
